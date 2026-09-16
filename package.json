@@ -1,0 +1,27 @@
+{
+  "name": "markdown-hub",
+  "private": true,
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "version:bump": "node scripts/bump-version.mjs",
+    "version:check": "node scripts/bump-version.mjs --check"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-dialog": "^2.4.0",
+    "@vitejs/plugin-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-markdown": "latest",
+    "react-syntax-highlighter": "^16.1.1",
+    "remark-gfm": "latest",
+    "vite": "latest"
+  },
+  "devDependencies": { "@tauri-apps/cli": "^2.8.0", "@tailwindcss/vite": "^4.1.0", "@types/react": "latest", "@types/react-dom": "latest", "@types/react-syntax-highlighter": "latest", "tailwindcss": "^4.1.0", "typescript": "latest" }
+}

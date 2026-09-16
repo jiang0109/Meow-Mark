@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Markdown Hub",
+  "version": "1.0.0",
+  "identifier": "com.markdownhub.app",
+  "build": { "beforeDevCommand": "npm.cmd run dev", "devUrl": "http://localhost:5173", "beforeBuildCommand": "npm.cmd run build", "frontendDist": "../dist" },
+  "app": { "windows": [{ "title": "Markdown Hub", "width": 1400, "height": 900, "minWidth": 900, "minHeight": 620 }], "security": { "csp": null } },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+  }
+}

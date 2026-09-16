@@ -1,0 +1,24 @@
+[package]
+name = "markdown-hub"
+version = "1.0.0"
+description = "A local Markdown notes app"
+authors = ["Markdown Hub"]
+license = "MIT"
+edition = "2021"
+
+[lib]
+name = "markdown_hub_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+
+[features]
+# 用于生产构建 / 不使用 dev server 时；`tauri build` 会传入 --features custom-protocol，
+# 缺少这个特性定义会导致 release 构建直接报 "does not have the feature `custom-protocol`"。
+custom-protocol = ["tauri/custom-protocol"]
