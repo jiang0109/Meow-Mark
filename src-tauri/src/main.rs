@@ -1,1 +1,3 @@
-fn main() { markdown_hub_lib::run(); }
+fn main() {
+    markdown_hub_lib::run();
+}

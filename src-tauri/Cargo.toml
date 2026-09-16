@@ -4,6 +4,7 @@ version = "1.0.0"
 description = "A local Markdown notes app"
 authors = ["Markdown Hub"]
 license = "MIT"
+repository = "https://github.com/jiang0109/Meow-Mark"
 edition = "2021"
 
 [lib]

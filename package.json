@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/jiang0109/Meow-Mark.git" },
   "type": "module",
   "scripts": {
     "dev": "vite",

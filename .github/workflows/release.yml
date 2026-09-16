@@ -1,0 +1,66 @@
+name: Release
+
+# 打 tag 即发布（tag 名必须与 tauri.conf.json 里的 version 对应）：
+#   npm.cmd run version:bump -- patch --git    # 同步版本号 + commit + 打 tag
+#   git push && git push --tags                # 触发本工作流
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write        # tauri-action 需要它来创建 Release 并上传安装包
+
+jobs:
+  release:
+    name: 构建 Windows 安装包并创建 Release
+    runs-on: windows-latest
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 版本号一致性检查
+        run: npm run version:check
+
+      - name: 校验 tag 与 tauri.conf.json 的版本一致
+        shell: pwsh
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          if ("v$version" -ne $env:GITHUB_REF_NAME) {
+            throw "tag $env:GITHUB_REF_NAME 与 tauri.conf.json 里的 $version 不一致；先跑 npm run version:bump 再打 tag"
+          }
+          Write-Host "OK: tag 与版本号一致 -> $env:GITHUB_REF_NAME"
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 缓存 Rust 构建产物
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # 这一步会自己执行 tauri.conf.json 里的 beforeBuildCommand（npm run build），
+      # 编译 release + custom-protocol 并把 dist 内嵌进 exe，最后打包 msi/nsis
+      - name: 构建并创建 Release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Markdown Hub v__VERSION__'
+          releaseBody: |
+            下载下方 Assets 里的 `*-setup.exe`（NSIS 安装包，推荐）或 `.msi` 安装。
+
+            - 系统要求：Windows 10/11（需 WebView2 运行时，Win11 自带）
+            - 绿色版：解压后直接运行 `markdown-hub.exe` 亦可，无需安装
+          releaseDraft: true      # 先存草稿，你在网页上确认无误后再点 Publish
+          prerelease: false

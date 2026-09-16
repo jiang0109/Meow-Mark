@@ -1,0 +1,13 @@
+# 统一换行符：仓库内一律以 LF 存储，工作区也检出 LF。
+# 目的是让本地（Windows）与 CI（windows-latest）得到完全一致的文件内容，
+# 避免 rustfmt / prettier 之类工具因为 CRLF/LF 差异产生无意义的 diff。
+* text=auto eol=lf
+
+# 这两类脚本必须用 CRLF，否则 Windows 下可能无法执行
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# 二进制资源不做文本转换
+*.png binary
+*.ico binary
+*.icns binary

@@ -1,0 +1,59 @@
+name: CI
+
+# 何时运行：推送到 main、任何 PR、以及手动触发
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同一分支连续推送时，自动取消上一次未跑完的任务，省额度
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: 前端构建 + Rust fmt/clippy
+    # 本项目只发布 Windows 版，在 Windows runner 上检查最贴近真实环境
+    # （Linux runner 还需要额外装 libwebkit2gtk 等一堆系统依赖）
+    runs-on: windows-latest
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # version:check 是纯 node 脚本、不依赖 node_modules，
+      # 放在 npm ci 之前，几秒钟就能拦下"忘记同步版本号"的提交
+      - name: 版本号一致性检查
+        run: npm run version:check
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 前端类型检查 + 构建
+        run: npm run build
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: 缓存 Rust 构建产物
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: 代码格式检查（rustfmt）
+        run: cargo fmt --check
+        working-directory: src-tauri
+
+      - name: 静态检查（clippy，警告即错误）
+        run: cargo clippy --all-targets -- -D warnings
+        working-directory: src-tauri
