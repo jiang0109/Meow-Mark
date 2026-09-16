@@ -51,7 +51,7 @@ jobs:
       # 这一步会自己执行 tauri.conf.json 里的 beforeBuildCommand（npm run build），
       # 编译 release + custom-protocol 并把 dist 内嵌进 exe，最后打包 msi/nsis
       - name: 构建并创建 Release
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
