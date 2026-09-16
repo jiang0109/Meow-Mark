@@ -1,0 +1,45 @@
+{
+  // ================= 让 VSCode 别去碰体积巨大的构建产物 =================
+  // src-tauri/target 现在有 5000+ 个文件、5.4 GB；不排除的话，
+  // 文件监听、全局搜索、以及 Windows Defender 的实时扫描都会被它拖慢。
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/src-tauri/target/**": true,
+    "**/dist/**": true,
+    "**/src-tauri/gen/schemas/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/src-tauri/target": true,
+    "**/dist": true,
+    "**/src-tauri/gen/schemas": true,
+    "**/package-lock.json": true,
+    "**/src-tauri/Cargo.lock": true
+  },
+
+  // ================= Rust =================
+  // Cargo 项目在 src-tauri 子目录里，必须显式告诉 rust-analyzer，
+  // 否则会出现"没有补全 / 一直 indexing / 找不到 crate"的情况。
+  "rust-analyzer.linkedProjects": ["src-tauri/Cargo.toml"],
+  // 用 clippy 而不是 cargo check 做诊断，和 CI 里跑的检查保持一致；
+  // 如果觉得编辑器变慢，把它改回 "check" 即可。
+  "rust-analyzer.check.command": "clippy",
+  "[rust]": {
+    // CI 里强制 rustfmt，保存时自动格式化，省得提交时才发现格式不合规
+    "editor.formatOnSave": true,
+    // rustfmt 默认行宽 100
+    "editor.rulers": [100]
+  },
+
+  // ================= 换行符与 .gitattributes 保持一致 =================
+  // 仓库统一使用 LF，避免 Windows 上编辑后产生大量无意义的换行符 diff
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // ================= Git =================
+  // 让"提交和同步"顺带把 tag 也推上去。
+  // 发版流程是 version:bump --git（自动打 tag）→ 推送即触发 release.yml，
+  // 打开这个开关就不用再单独执行 "Git: Push Tags" 了。
+  "git.followTagsWhenSync": true
+}
