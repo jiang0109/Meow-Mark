@@ -15,6 +15,14 @@ struct Note {
     updated_at: u64,
 }
 
+/// 被拖入或选中的 Markdown 文件解析结果。
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OpenedFile {
+    directory: String,
+    note_id: String,
+}
+
 fn root(directory: &str) -> Result<PathBuf, String> {
     let path = PathBuf::from(directory);
     if !path.is_dir() {
@@ -142,9 +150,42 @@ fn save_note(directory: String, note: Note) -> Result<Note, String> {
     note_from_path(&target)
 }
 
+/// 删除笔记：移入系统回收站，误删可从回收站恢复。
 #[tauri::command]
 fn delete_note(directory: String, file_path: String) -> Result<(), String> {
-    fs::remove_file(checked_file(&directory, &file_path)?).map_err(|e| e.to_string())
+    let file = checked_file(&directory, &file_path)?;
+    trash::delete(&file).map_err(|e| format!("移入回收站失败：{e}"))
+}
+
+/// 解析拖入 / 选中的文件：校验它确实是 .md 文件，并返回其所在目录与规范化路径。
+/// 前端据此把工作目录切到该文件所在文件夹并选中这篇笔记（不改动目录模型本身）。
+#[tauri::command]
+fn resolve_markdown_file(path: String) -> Result<OpenedFile, String> {
+    let file = PathBuf::from(&path);
+    if !file.exists() {
+        return Err("文件不存在或无法访问".into());
+    }
+    if !file.is_file() {
+        return Err("请拖入或选择一个 Markdown 文件，而不是文件夹".into());
+    }
+    if file
+        .extension()
+        .and_then(|v| v.to_str())
+        .map(|v| v.eq_ignore_ascii_case("md"))
+        != Some(true)
+    {
+        return Err("只支持 .md 文件，其它格式暂不支持".into());
+    }
+    let canonical = file.canonicalize().map_err(|e| e.to_string())?;
+    let directory = canonical
+        .parent()
+        .ok_or("无法确定文件所在目录")?
+        .canonicalize()
+        .map_err(|e| e.to_string())?;
+    Ok(OpenedFile {
+        directory: directory.to_string_lossy().into_owned(),
+        note_id: canonical.to_string_lossy().into_owned(),
+    })
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -155,7 +196,8 @@ pub fn run() {
             list_notes,
             create_note,
             save_note,
-            delete_note
+            delete_note,
+            resolve_markdown_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running Markdown Hub");

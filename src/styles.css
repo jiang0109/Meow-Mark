@@ -1,27 +1,72 @@
-.preview h1 { margin: 0 0 1rem; font-size: 2rem; font-weight: 800; letter-spacing: -.03em; }
-.preview h2 { margin: 1.75rem 0 .75rem; font-size: 1.35rem; font-weight: 750; }
-.preview h3 { margin: 1.5rem 0 .6rem; font-size: 1.1rem; font-weight: 700; }
-.preview p { margin: .8rem 0; line-height: 1.8; color: #475569; }
-.preview ul, .preview ol { margin: .8rem 0; padding-left: 1.5rem; color: #475569; }
-.preview ul { list-style: disc; }
-.preview ol { list-style: decimal; }
-.preview li { margin: .35rem 0; }
-.preview input[type='checkbox'] { margin-right: .45rem; accent-color: #6d5dfc; }
-.preview blockquote { margin: 1rem 0; border-left: 3px solid #6d5dfc; background: #f5f3ff; padding: .7rem 1rem; border-radius: 0 .75rem .75rem 0; }
-.preview code { border-radius: .35rem; background: #eef0f5; padding: .15rem .4rem; color: #4338ca; font-size: .88em; }
-.preview pre { margin: 1rem 0; overflow-x: auto; border-radius: .9rem; background: #172033; padding: 1rem; color: #e2e8f0; }
-.preview pre code { background: transparent; padding: 0; color: inherit; }
-.preview a { color: #5b4df5; text-decoration: underline; text-underline-offset: 3px; }
-.preview hr { margin: 1.5rem 0; border-color: #e2e8f0; }
-.preview strong { color: #172033; }
-.preview table { width: 100%; margin: 1rem 0; border-collapse: collapse; font-size: .9rem; }
-.preview th, .preview td { border: 1px solid #e2e8f0; padding: .65rem .8rem; text-align: left; }
-.preview th { background: #f8fafc; color: #172033; }
 @import "tailwindcss";
 
+/* 语义化颜色令牌：组件里只用这些名字，明暗两套值分别定义在下面。
+   Tailwind 生成的 bg-surface / text-muted 等工具类引用的是这些 CSS 变量，
+   所以切换主题只需覆盖变量，不用给每个类写 dark: 变体。 */
 @theme {
   --color-ink: #172033;
   --color-paper: #f6f7fb;
   --color-accent: #6d5dfc;
+
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-line: #e8ecf4;
+  --color-line-strong: #ddd6fe;
+  --color-soft: #cbd5e1;
+  --color-faint: #94a3b8;
+  --color-muted: #64748b;
+  --color-body: #475569;
+  --color-accent-soft: #f5f3ff;
+  --color-accent-ink: #4338ca;
+  --color-danger: #e11d48;
+  --color-danger-soft: #fff1f2;
+  --color-success: #059669;
+  --color-success-soft: #ecfdf5;
+
   --shadow-panel: 0 18px 50px -24px rgba(23, 32, 51, .25);
 }
+
+/* 暗色主题：只覆盖变量，组件代码完全不用感知 */
+.dark {
+  --color-ink: #e6ecf7;
+  --color-paper: #0e1320;
+  --color-accent: #8b7dff;
+
+  --color-surface: #161d2c;
+  --color-surface-muted: #1b2333;
+  --color-line: #27314a;
+  --color-line-strong: #3d3a68;
+  --color-soft: #48536b;
+  --color-faint: #7c89a0;
+  --color-muted: #9aa6bd;
+  --color-body: #c3cddd;
+  --color-accent-soft: #221d40;
+  --color-accent-ink: #c4b5fd;
+  --color-danger: #fb7185;
+  --color-danger-soft: #3a1b27;
+  --color-success: #34d399;
+  --color-success-soft: #12302a;
+
+  --shadow-panel: 0 18px 50px -24px rgba(0, 0, 0, .65);
+}
+
+/* Markdown 预览区（代码块保持深色，两种主题下都是同一块深色底） */
+.preview h1 { margin: 0 0 1rem; font-size: 2rem; font-weight: 800; letter-spacing: -.03em; }
+.preview h2 { margin: 1.75rem 0 .75rem; font-size: 1.35rem; font-weight: 750; }
+.preview h3 { margin: 1.5rem 0 .6rem; font-size: 1.1rem; font-weight: 700; }
+.preview p { margin: .8rem 0; line-height: 1.8; color: var(--color-body); }
+.preview ul, .preview ol { margin: .8rem 0; padding-left: 1.5rem; color: var(--color-body); }
+.preview ul { list-style: disc; }
+.preview ol { list-style: decimal; }
+.preview li { margin: .35rem 0; }
+.preview input[type='checkbox'] { margin-right: .45rem; accent-color: var(--color-accent); }
+.preview blockquote { margin: 1rem 0; border-left: 3px solid var(--color-accent); background: var(--color-accent-soft); padding: .7rem 1rem; border-radius: 0 .75rem .75rem 0; }
+.preview code { border-radius: .35rem; background: var(--color-surface-muted); padding: .15rem .4rem; color: var(--color-accent-ink); font-size: .88em; }
+.preview pre { margin: 1rem 0; overflow-x: auto; border-radius: .9rem; background: #172033; padding: 1rem; color: #e2e8f0; }
+.preview pre code { background: transparent; padding: 0; color: inherit; }
+.preview a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+.preview hr { margin: 1.5rem 0; border-color: var(--color-line); }
+.preview strong { color: var(--color-ink); }
+.preview table { width: 100%; margin: 1rem 0; border-collapse: collapse; font-size: .9rem; }
+.preview th, .preview td { border: 1px solid var(--color-line); padding: .65rem .8rem; text-align: left; }
+.preview th { background: var(--color-surface-muted); color: var(--color-ink); }
