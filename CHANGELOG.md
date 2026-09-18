@@ -7,6 +7,8 @@
 
 ## [未发布]
 
+## [1.1.0] - 2026-09-17
+
 ### 新增
 
 - 暗色模式：默认跟随系统主题，手动切换（跟随系统 → 亮色 → 暗色）后记住选择；首屏渲染前即套用主题，不会闪白
@@ -52,5 +54,6 @@
 - 新增图标资源与源文件 `app-icon.svg`（`npm.cmd run tauri -- icon app-icon.svg` 可重新生成）
 - 补充 MIT 许可证、`.gitattributes`（统一 LF）与 `.vscode/settings.json`
 
-[未发布]: https://github.com/jiang0109/Meow-Mark/compare/v1.0.0...HEAD
+[未发布]: https://github.com/jiang0109/Meow-Mark/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.1.0
 [1.0.0]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.0.0
