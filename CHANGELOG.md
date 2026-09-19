@@ -7,9 +7,24 @@
 
 ## [未发布]
 
+## [1.1.2] - 2026-09-19
+
+### 新增
+
+- **阅读模式**：预览面板右上角新增「⤢ 全屏阅读」按钮——点击后隐藏编辑器、预览区放大并居中（内容限宽 860px，便于长文阅读），再次点击或按 `Esc` 恢复「编辑 + 预览」双栏
+- 阅读模式下页面左上角（标题旁）显示「✎ 编辑笔记」按钮，一键切回双栏实时渲染视图
+- 阅读模式下预览面板标题会从「预览 / OUTPUT」变为「阅读 / READING」
+
+## [1.1.1] - 2026-09-18
+
 ### 修复
 
 - 修复 Windows 上启动应用时会额外弹出一个命令行窗口的问题：release 构建现在使用 Windows GUI 子系统（`windows_subsystem = "windows"`），开发构建仍保留控制台以便查看日志
+
+### 依赖
+
+- 升级 react / react-dom 19.3.0、vite 8.3.0、`@vitejs/plugin-react` 6.1.1、`@tauri-apps/plugin-dialog` 2.7.3 等
+- CI 使用的 GitHub Actions 升级到最新版（checkout、setup-node、tauri-action）
 
 ## [1.1.0] - 2026-09-17
 
@@ -58,6 +73,8 @@
 - 新增图标资源与源文件 `app-icon.svg`（`npm.cmd run tauri -- icon app-icon.svg` 可重新生成）
 - 补充 MIT 许可证、`.gitattributes`（统一 LF）与 `.vscode/settings.json`
 
-[未发布]: https://github.com/jiang0109/Meow-Mark/compare/v1.1.0...HEAD
+[未发布]: https://github.com/jiang0109/Meow-Mark/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.1.2
+[1.1.1]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.1.1
 [1.1.0]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.1.0
 [1.0.0]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.0.0
