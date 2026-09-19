@@ -47,6 +47,8 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [themeChoice, setThemeChoice] = useState<ThemeChoice>(getThemeChoice);
   const [dragging, setDragging] = useState(false);
+  /** 阅读模式：隐藏编辑器、预览放大居中（仅当前会话有效，不做持久化） */
+  const [readingMode, setReadingMode] = useState(false);
   const dirtyId = useRef<string | null>(null);
   const revision = useRef(0);
   /** 切换目录后希望自动选中的笔记（拖入/选择文件时用） */
@@ -99,6 +101,15 @@ export default function App() {
       unlisten?.();
     };
   }, []);
+  // 阅读模式：按 Esc 退出（阅读时最自然的返回方式）
+  useEffect(() => {
+    if (!readingMode) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setReadingMode(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [readingMode]);
   useEffect(() => {
     if (!activeNote || dirtyId.current !== activeNote.id) return;
     const snapshot = activeNote;
@@ -280,9 +291,21 @@ export default function App() {
           <p className="mb-1 text-xs font-bold uppercase tracking-[.22em] text-accent">
             Write · Shape · Share
           </p>
-          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
-            Markdown Hub
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+              Markdown Hub
+            </h1>
+            {readingMode && (
+              <button
+                type="button"
+                onClick={() => setReadingMode(false)}
+                title="退出阅读模式，恢复「编辑 + 预览」双栏"
+                className="rounded-xl border border-line-strong bg-surface px-3 py-2 text-xs font-bold text-accent hover:bg-accent-soft"
+              >
+                ✎ 编辑笔记
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <div
@@ -330,7 +353,13 @@ export default function App() {
       {!directory ? (
         <Welcome onSelect={selectDirectory} />
       ) : (
-        <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_minmax(0,1fr)] xl:gap-5">
+        <section
+          className={`grid min-h-0 flex-1 grid-cols-1 gap-4 xl:gap-5 ${
+            readingMode
+              ? "xl:grid-cols-[260px_minmax(0,1fr)]"
+              : "xl:grid-cols-[260px_minmax(0,1fr)_minmax(0,1fr)]"
+          }`}
+        >
           <NoteSidebar
             notes={filteredNotes}
             total={notes.length}
@@ -341,48 +370,73 @@ export default function App() {
             onAdd={addNote}
             onDelete={removeNote}
           />
-          <article className="flex min-h-[48vh] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:min-h-0">
-            <PanelHeader icon="✎" title="编辑器" label="MARKDOWN">
-              {activeNote && (
-                <span className="text-[11px] text-faint">
-                  {activeNote.content.length} 字符
-                </span>
+          {!readingMode && (
+            <article className="flex min-h-[48vh] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:min-h-0">
+              <PanelHeader icon="✎" title="编辑器" label="MARKDOWN">
+                {activeNote && (
+                  <span className="text-[11px] text-faint">
+                    {activeNote.content.length} 字符
+                  </span>
+                )}
+              </PanelHeader>
+              {activeNote ? (
+                <>
+                  <input
+                    value={activeNote.title}
+                    onChange={(e) => updateActiveNote({ title: e.target.value })}
+                    aria-label="笔记标题"
+                    placeholder="笔记标题"
+                    className="border-b border-line px-5 py-4 text-lg font-bold outline-none placeholder:text-soft sm:px-6"
+                  />
+                  <textarea
+                    value={activeNote.content}
+                    onChange={(e) =>
+                      updateActiveNote({ content: e.target.value })
+                    }
+                    spellCheck={false}
+                    aria-label="Markdown 编辑器"
+                    placeholder="在这里输入 Markdown…"
+                    className="min-h-0 flex-1 resize-none bg-transparent p-5 font-mono text-sm leading-7 text-body outline-none placeholder:text-soft sm:p-6"
+                  />
+                  <div className="border-t border-line px-5 py-2.5 text-[11px] text-faint">
+                    停止输入 650ms 后自动保存为 .md 文件
+                  </div>
+                </>
+              ) : (
+                <EmptyState onAdd={addNote} />
               )}
-            </PanelHeader>
-            {activeNote ? (
-              <>
-                <input
-                  value={activeNote.title}
-                  onChange={(e) => updateActiveNote({ title: e.target.value })}
-                  aria-label="笔记标题"
-                  placeholder="笔记标题"
-                  className="border-b border-line px-5 py-4 text-lg font-bold outline-none placeholder:text-soft sm:px-6"
-                />
-                <textarea
-                  value={activeNote.content}
-                  onChange={(e) =>
-                    updateActiveNote({ content: e.target.value })
-                  }
-                  spellCheck={false}
-                  aria-label="Markdown 编辑器"
-                  placeholder="在这里输入 Markdown…"
-                  className="min-h-0 flex-1 resize-none bg-transparent p-5 font-mono text-sm leading-7 text-body outline-none placeholder:text-soft sm:p-6"
-                />
-                <div className="border-t border-line px-5 py-2.5 text-[11px] text-faint">
-                  停止输入 650ms 后自动保存为 .md 文件
-                </div>
-              </>
-            ) : (
-              <EmptyState onAdd={addNote} />
-            )}
-          </article>
+            </article>
+          )}
           <article className="flex min-h-[48vh] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:min-h-0">
-            <PanelHeader icon="◉" title="预览" label="OUTPUT">
-              <span className="rounded-full bg-success-soft px-2.5 py-1 text-[10px] font-bold text-success">
-                LIVE
-              </span>
+            <PanelHeader
+              icon="◉"
+              title={readingMode ? "阅读" : "预览"}
+              label={readingMode ? "READING" : "OUTPUT"}
+            >
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-success-soft px-2.5 py-1 text-[10px] font-bold text-success">
+                  LIVE
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setReadingMode((value) => !value)}
+                  aria-pressed={readingMode}
+                  title={
+                    readingMode
+                      ? "退出阅读模式，恢复「编辑 + 预览」双栏"
+                      : "全屏阅读：隐藏编辑器，预览放大居中"
+                  }
+                  className="rounded-lg border border-line bg-surface px-2 py-1 text-[11px] font-bold text-muted hover:bg-surface-muted hover:text-accent"
+                >
+                  {readingMode ? "⤡ 退出阅读" : "⤢ 全屏阅读"}
+                </button>
+              </div>
             </PanelHeader>
-            <div className="preview min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
+            <div
+              className={`preview min-h-0 flex-1 overflow-y-auto p-5 sm:p-7 ${
+                readingMode ? "mx-auto w-full max-w-[860px]" : ""
+              }`}
+            >
               {activeNote?.content ? (
                 <MarkdownPreview>{activeNote.content}</MarkdownPreview>
               ) : (
