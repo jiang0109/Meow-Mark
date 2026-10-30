@@ -7,6 +7,16 @@
 
 ## [未发布]
 
+## [1.2.0] - 2026-09-19
+
+### 新增
+
+- **导出 PDF**：预览面板右上角新增「⭳ 导出 PDF」按钮。点击后走系统打印对话框，把「打印机」选为 **Microsoft Print to PDF** 即可保存为 PDF（文件名默认取笔记标题）
+  - 打印时自动隐藏侧栏、编辑器、面板标题与全部按钮，只输出预览正文
+  - A4 纸张，上下 18mm / 左右 16mm 页边距
+  - 标题不会落在页尾；代码块、表格、引用、图片不会被跨页切断
+  - 暗色模式下导出同样按浅色排版；代码块打印为浅底深字（彩色语法高亮在打印时被压平，否则浅色 token 在白底上不可读）
+
 ## [1.1.2] - 2026-09-19
 
 ### 新增
@@ -73,7 +83,8 @@
 - 新增图标资源与源文件 `app-icon.svg`（`npm.cmd run tauri -- icon app-icon.svg` 可重新生成）
 - 补充 MIT 许可证、`.gitattributes`（统一 LF）与 `.vscode/settings.json`
 
-[未发布]: https://github.com/jiang0109/Meow-Mark/compare/v1.1.2...HEAD
+[未发布]: https://github.com/jiang0109/Meow-Mark/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.2.0
 [1.1.2]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.1.2
 [1.1.1]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.1.1
 [1.1.0]: https://github.com/jiang0109/Meow-Mark/releases/tag/v1.1.0
