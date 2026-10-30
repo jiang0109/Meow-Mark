@@ -208,6 +208,21 @@ export default function App() {
     saveThemeChoice(next);
     setThemeChoice(next);
   }
+  /**
+   * 导出 PDF：走系统打印对话框（打印机选「Microsoft Print to PDF」）。
+   * 打印样式在 styles.css 的 @media print 里统一处理（只留预览正文 + A4 分页）。
+   * 顺便把 document.title 临时换成笔记标题 —— WebView2 会用它作为默认文件名。
+   */
+  function exportPdf() {
+    if (!activeNote) return;
+    const originalTitle = document.title;
+    document.title = activeNote.title.trim() || "无标题笔记";
+    try {
+      window.print();
+    } finally {
+      document.title = originalTitle;
+    }
+  }
   async function flushActiveNote() {
     if (!activeNote || dirtyId.current !== activeNote.id) return;
     const saved = await saveNote(directory, activeNote);
@@ -285,8 +300,8 @@ export default function App() {
             ? "磁盘自动保存"
             : "尚未选择目录";
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1800px] flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
-      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <main className="app-shell mx-auto flex min-h-screen max-w-[1800px] flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+      <header className="app-chrome mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="mb-1 text-xs font-bold uppercase tracking-[.22em] text-accent">
             Write · Shape · Share
@@ -346,7 +361,7 @@ export default function App() {
         </div>
       </header>
       {message && (
-        <div className="mb-4 rounded-xl border border-danger-soft bg-danger-soft px-4 py-3 text-sm text-danger">
+        <div className="app-chrome mb-4 rounded-xl border border-danger-soft bg-danger-soft px-4 py-3 text-sm text-danger">
           {message}
         </div>
       )}
@@ -354,7 +369,7 @@ export default function App() {
         <Welcome onSelect={selectDirectory} />
       ) : (
         <section
-          className={`grid min-h-0 flex-1 grid-cols-1 gap-4 xl:gap-5 ${
+          className={`app-grid grid min-h-0 flex-1 grid-cols-1 gap-4 xl:gap-5 ${
             readingMode
               ? "xl:grid-cols-[260px_minmax(0,1fr)]"
               : "xl:grid-cols-[260px_minmax(0,1fr)_minmax(0,1fr)]"
@@ -371,8 +386,13 @@ export default function App() {
             onDelete={removeNote}
           />
           {!readingMode && (
-            <article className="flex min-h-[48vh] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:min-h-0">
-              <PanelHeader icon="✎" title="编辑器" label="MARKDOWN">
+            <article className="app-editor flex min-h-[48vh] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:min-h-0">
+              <PanelHeader
+                icon="✎"
+                title="编辑器"
+                label="MARKDOWN"
+                className="app-chrome"
+              >
                 {activeNote && (
                   <span className="text-[11px] text-faint">
                     {activeNote.content.length} 字符
@@ -407,16 +427,26 @@ export default function App() {
               )}
             </article>
           )}
-          <article className="flex min-h-[48vh] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:min-h-0">
+          <article className="app-preview flex min-h-[48vh] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:min-h-0">
             <PanelHeader
               icon="◉"
               title={readingMode ? "阅读" : "预览"}
               label={readingMode ? "READING" : "OUTPUT"}
+              className="app-chrome"
             >
               <div className="flex items-center gap-2">
                 <span className="rounded-full bg-success-soft px-2.5 py-1 text-[10px] font-bold text-success">
                   LIVE
                 </span>
+                <button
+                  type="button"
+                  onClick={exportPdf}
+                  disabled={!activeNote}
+                  title="导出为 PDF：在打印对话框里把「打印机」选为 Microsoft Print to PDF"
+                  className="rounded-lg border border-line bg-surface px-2 py-1 text-[11px] font-bold text-muted hover:bg-surface-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  ⭳ 导出 PDF
+                </button>
                 <button
                   type="button"
                   onClick={() => setReadingMode((value) => !value)}
@@ -447,7 +477,7 @@ export default function App() {
         </section>
       )}
       {dragging && (
-        <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center bg-paper/80 p-6 backdrop-blur-sm">
+        <div className="app-chrome pointer-events-none fixed inset-0 z-50 grid place-items-center bg-paper/80 p-6 backdrop-blur-sm">
           <div className="rounded-3xl border-2 border-dashed border-line-strong bg-surface px-10 py-8 text-center shadow-panel">
             <p className="text-3xl">📄</p>
             <p className="mt-3 text-sm font-bold">松开即可打开这个 Markdown 文件</p>
@@ -482,7 +512,7 @@ function NoteSidebar({
   onDelete,
 }: SidebarProps) {
   return (
-    <aside className="flex max-h-[38vh] min-h-[300px] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:max-h-none xl:min-h-0">
+    <aside className="app-sidebar flex max-h-[38vh] min-h-[300px] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-panel xl:max-h-none xl:min-h-0">
       <div className="border-b border-line p-4">
         <div className="mb-3 flex items-center justify-between">
           <div>
@@ -639,15 +669,19 @@ function PanelHeader({
   icon,
   title,
   label,
+  className = "",
   children,
 }: {
   icon: string;
   title: string;
   label: string;
+  className?: string;
   children?: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+    <div
+      className={`flex items-center justify-between border-b border-line px-5 py-3.5 ${className}`}
+    >
       <div className="flex items-center gap-2.5">
         <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-soft text-accent">
           {icon}

@@ -70,3 +70,143 @@
 .preview table { width: 100%; margin: 1rem 0; border-collapse: collapse; font-size: .9rem; }
 .preview th, .preview td { border: 1px solid var(--color-line); padding: .65rem .8rem; text-align: left; }
 .preview th { background: var(--color-surface-muted); color: var(--color-ink); }
+
+/* ================= 打印 / 导出 PDF =================
+   方案：复用系统打印对话框（打印机选「Microsoft Print to PDF」）。
+   这里全部用 !important + 语义类名，避免和 Tailwind 的 grid/flex 工具类打架。
+
+   四件事：
+   ① 强制浅色令牌 —— 用户在暗色模式下导出也能得到白底
+   ② 隐藏应用外壳 —— 只保留 .preview 里的正文
+   ③ A4 纸张 + 分页规则 —— 标题不落页尾，代码块/表格/引用不被切断
+   ④ 深色代码块转浅色 —— 省墨、白底可读（彩色 token 用内联样式，无法保留）
+*/
+@media print {
+  @page {
+    size: A4;
+    /* 上下 18mm、左右 16mm：A4 可打印宽度约 178mm，正文行长适中 */
+    margin: 18mm 16mm;
+  }
+
+  /* ① 无论当前是亮色还是暗色，打印一律按浅色排版 */
+  :root,
+  .dark {
+    --color-paper: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f6f8fa;
+    --color-line: #d0d7de;
+    --color-line-strong: #d0d7de;
+    --color-soft: #9ca3af;
+    --color-faint: #6b7280;
+    --color-muted: #4b5563;
+    --color-body: #1f2937;
+    --color-ink: #111827;
+    --color-accent: #4338ca;
+    --color-accent-soft: #f5f3ff;
+    --color-accent-ink: #4338ca;
+    --shadow-panel: none;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  /* ② 隐藏应用外壳，只留预览正文 */
+  .app-chrome,
+  .app-sidebar,
+  .app-editor {
+    display: none !important;
+  }
+  .app-shell {
+    display: block !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .app-grid {
+    display: block !important;
+    gap: 0 !important;
+    min-height: 0 !important;
+  }
+  .app-preview {
+    min-height: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  /* 关键：预览区是 overflow-y-auto 的滚动容器，
+     不取消它就只能打出一屏内容（这是最容易踩的坑） */
+  .preview {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* ③ 分页规则 */
+  .preview h1,
+  .preview h2,
+  .preview h3,
+  .preview h4,
+  .preview h5,
+  .preview h6 {
+    break-after: avoid-page;
+    break-inside: avoid;
+  }
+  .preview p {
+    orphans: 3;
+    widows: 3;
+  }
+  .preview pre,
+  .preview blockquote,
+  .preview table,
+  .preview img,
+  .preview li,
+  .preview tr {
+    break-inside: avoid;
+  }
+
+  /* ④ 深色代码块 → 浅色底 + 深灰字（代码不换行会溢出纸张，这里允许折行） */
+  .preview pre {
+    overflow: visible !important;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: #f6f8fa !important;
+    color: #1f2328 !important;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+  }
+  .preview pre code,
+  .preview pre span {
+    color: #1f2328 !important;
+    background: transparent !important;
+  }
+  .preview code {
+    background: #f6f8fa !important;
+    color: #1f2328 !important;
+    border: 1px solid #e5e7eb;
+  }
+  .preview blockquote {
+    background: #f6f8fa !important;
+    border-left-color: #d0d7de !important;
+  }
+  .preview a {
+    color: #0969da !important;
+  }
+  .preview th,
+  .preview td {
+    border-color: #d0d7de !important;
+  }
+  .preview th {
+    background: #f6f8fa !important;
+  }
+  .preview table {
+    font-size: .86rem;
+  }
+}
