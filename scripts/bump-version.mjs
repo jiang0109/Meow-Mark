@@ -186,7 +186,14 @@ function buildEdits(current, next) {
  * `--git` 会只提交版本文件并立刻打 tag。如果工作区还有别的未提交改动，
  * tag 就会落在一个"缺少这些改动"的提交上（曾经踩过：功能代码还没提交就 bump，
  * 结果发布的安装包不含新功能）。所以这里先拦一道。
+ *
+ * 判据（P22 的改进）：
+ *   · 被跟踪文件的任何改动（M / A / D / R …）→ 一律算脏
+ *   · 未跟踪文件（??）→ 只有落在源码目录下才算脏
+ *     （根目录下刻意不跟踪的文档/草稿不应阻塞发版）
  */
+const SOURCE_DIRS = ['src/', 'src-tauri/', 'scripts/', '.github/'];
+
 function assertCleanWorktree() {
   let output;
   try {
@@ -199,10 +206,21 @@ function assertCleanWorktree() {
   const offenders = output
     .split('\n')
     .filter((line) => line.trim())
-    .map((line) => line.slice(3).trim().replace(/^"|"$/g, ''))
-    .map((p) => (p.includes(' -> ') ? p.split(' -> ')[1] : p))
-    .map((p) => p.replace(/\\/g, '/'))
-    .filter((p) => !allowed.has(p));
+    .map((line) => {
+      const untracked = line.slice(0, 2).includes('?');
+      const raw = line
+        .slice(3)
+        .trim()
+        .replace(/^"|"$/g, '')
+        .replace(/\\/g, '/');
+      return { untracked, path: raw.includes(' -> ') ? raw.split(' -> ')[1] : raw };
+    })
+    .filter(({ untracked, path }) => {
+      if (allowed.has(path)) return false; // 版本文件本身由脚本负责
+      if (!untracked) return true; // 被跟踪的改动：一律算脏
+      return SOURCE_DIRS.some((dir) => path.startsWith(dir)); // 未跟踪：只看源码目录
+    })
+    .map(({ path }) => path);
   if (offenders.length) {
     const shown = offenders.slice(0, 10).join('\n  ');
     const more = offenders.length > 10 ? `\n  … 另有 ${offenders.length - 10} 项` : '';
